@@ -27,6 +27,9 @@ camera frame ──▶ ML Kit OCR (on-device, ~5 fps)
   catches it; otherwise it matches the printed denominator against each set's
   official card count and ranks ambiguous hits by whether the card's name also
   appears in the OCR text.
+- **Prices** ride along free: TCGdex card responses include daily TCGplayer
+  (USD) and Cardmarket (EUR) market prices per print variant
+  (`src/lib/pricing.ts`), shown under the card name on scan.
 
 ## Stack
 

@@ -28,6 +28,8 @@ export interface TcgdexCard {
   image?: string;
   rarity?: string;
   set?: { id: string; name: string };
+  /** Daily TCGplayer/Cardmarket prices; parsed by src/lib/pricing.ts. */
+  pricing?: unknown;
 }
 
 export interface LookupResult {
