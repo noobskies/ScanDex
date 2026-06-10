@@ -11,9 +11,13 @@ const FULL_PRICING = {
   cardmarket: {
     updated: '2026-06-09',
     unit: 'EUR',
+    idProduct: 715498,
     avg: 3.5,
     low: 1.9,
     trend: 3.8,
+    'avg-holo': 5.2,
+    'low-holo': 2.4,
+    'trend-holo': 5.5,
   },
 };
 
@@ -30,8 +34,11 @@ describe('extractPrices', () => {
   });
 
   it('extracts Cardmarket trend price', () => {
-    const cm = extractPrices(FULL_PRICING).find((p) => p.source === 'Cardmarket');
-    expect(cm).toMatchObject({ amount: 3.8, currency: 'EUR' });
+    const cm = extractPrices(FULL_PRICING).filter((p) => p.source === 'Cardmarket');
+    expect(cm).toEqual([
+      { source: 'Cardmarket', variant: 'Normal', amount: 3.8, currency: 'EUR' },
+      { source: 'Cardmarket', variant: 'Holo', amount: 5.5, currency: 'EUR' },
+    ]);
   });
 
   it('handles missing or junk pricing', () => {
@@ -70,8 +77,14 @@ describe('formatPriceLines', () => {
   it('renders one line per source with variants', () => {
     expect(formatPriceLines(FULL_PRICING)).toEqual([
       'TCGplayer: Holo $4.12 · Reverse Holo $2.30 · Normal $1.10',
-      'Cardmarket: €3.80',
+      'Cardmarket: Normal €3.80 · Holo €5.50',
     ]);
+  });
+
+  it('collapses a lone Cardmarket price to a plain line', () => {
+    expect(
+      formatPriceLines({ cardmarket: { unit: 'EUR', trend: 0.03 } }),
+    ).toEqual(['Cardmarket: €0.03']);
   });
 
   it('omits the variant label for a lone normal print', () => {

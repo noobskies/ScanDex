@@ -72,13 +72,19 @@ export function extractPrices(pricing: unknown): PriceEntry[] {
   if (cardmarket) {
     const currency =
       typeof cardmarket.unit === 'string' ? cardmarket.unit : 'EUR';
-    const amount =
-      asPrice(cardmarket.trend) ??
-      asPrice(cardmarket.avg) ??
-      asPrice(cardmarket.avg7) ??
-      asPrice(cardmarket.low);
-    if (amount !== undefined) {
-      out.push({ source: 'Cardmarket', amount, currency });
+    // Cardmarket exposes holo prices as "-holo" suffixed fields.
+    const pick = (suffix: string) =>
+      asPrice(cardmarket[`trend${suffix}`]) ??
+      asPrice(cardmarket[`avg${suffix}`]) ??
+      asPrice(cardmarket[`avg7${suffix}`]) ??
+      asPrice(cardmarket[`low${suffix}`]);
+    const normal = pick('');
+    if (normal !== undefined) {
+      out.push({ source: 'Cardmarket', variant: 'Normal', amount: normal, currency });
+    }
+    const holo = pick('-holo');
+    if (holo !== undefined) {
+      out.push({ source: 'Cardmarket', variant: 'Holo', amount: holo, currency });
     }
   }
 
@@ -100,23 +106,19 @@ export function formatPriceLines(pricing: unknown): string[] {
   const entries = extractPrices(pricing);
   const lines: string[] = [];
 
-  const tcgplayer = entries.filter((e) => e.source === 'TCGplayer');
-  if (tcgplayer.length === 1 && tcgplayer[0].variant === 'Normal') {
-    lines.push(
-      `TCGplayer: ${formatAmount(tcgplayer[0].amount, tcgplayer[0].currency)}`,
-    );
-  } else if (tcgplayer.length > 0) {
-    const parts = tcgplayer.map(
-      (e) => `${e.variant} ${formatAmount(e.amount, e.currency)}`,
-    );
-    lines.push(`TCGplayer: ${parts.join(' · ')}`);
-  }
-
-  const cardmarket = entries.find((e) => e.source === 'Cardmarket');
-  if (cardmarket) {
-    lines.push(
-      `Cardmarket: ${formatAmount(cardmarket.amount, cardmarket.currency)}`,
-    );
+  for (const source of ['TCGplayer', 'Cardmarket'] as const) {
+    const forSource = entries.filter((e) => e.source === source);
+    if (forSource.length === 0) continue;
+    if (forSource.length === 1 && (forSource[0].variant ?? 'Normal') === 'Normal') {
+      lines.push(
+        `${source}: ${formatAmount(forSource[0].amount, forSource[0].currency)}`,
+      );
+    } else {
+      const parts = forSource.map(
+        (e) => `${e.variant} ${formatAmount(e.amount, e.currency)}`,
+      );
+      lines.push(`${source}: ${parts.join(' · ')}`);
+    }
   }
 
   return lines;
