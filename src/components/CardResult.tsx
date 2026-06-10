@@ -1,6 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
 import type { CardLookupState } from '../hooks/useCardLookup';
+import { formatPriceLines } from '../lib/pricing';
 import { cardImageUrl } from '../lib/tcgdex';
 
 export function CardResult({ lookup }: { lookup: CardLookupState }) {
@@ -35,6 +36,11 @@ export function CardResult({ lookup }: { lookup: CardLookupState }) {
             {lookup.result.card.rarity && (
               <Text style={styles.meta}>{lookup.result.card.rarity}</Text>
             )}
+            {formatPriceLines(lookup.result.card.pricing).map((line) => (
+              <Text key={line} style={styles.price}>
+                {line}
+              </Text>
+            ))}
             {lookup.result.alternatives.length > 0 && (
               <Text style={styles.meta}>
                 +{lookup.result.alternatives.length} other possible{' '}
@@ -63,4 +69,5 @@ const styles = StyleSheet.create({
   info: { flex: 1 },
   name: { color: '#fff', fontSize: 18, fontWeight: '700' },
   meta: { color: '#b9bdc7', fontSize: 13, marginTop: 2 },
+  price: { color: '#7ee08a', fontSize: 13, fontWeight: '600', marginTop: 2 },
 });

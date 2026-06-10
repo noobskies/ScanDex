@@ -27,6 +27,9 @@ camera frame ──▶ ML Kit OCR (on-device, ~5 fps)
   catches it; otherwise it matches the printed denominator against each set's
   official card count and ranks ambiguous hits by whether the card's name also
   appears in the OCR text.
+- **Prices** ride along free: TCGdex card responses include daily TCGplayer
+  (USD) and Cardmarket (EUR) market prices per print variant
+  (`src/lib/pricing.ts`), shown under the card name on scan.
 
 ## Stack
 
@@ -71,6 +74,25 @@ npm test            # jest — parser, stabilizer, and lookup are pure TS with u
 - [ ] **Variant disambiguation** — reverse holo / promo stamps for pricing.
 - [ ] **Multilingual cards** — TCGdex serves 14 languages; Ximilar API as a
       last-resort fallback.
+
+## Troubleshooting
+
+**`JvmVendorSpec does not have member field 'IBM_SEMERU'` during the Android
+build** — Gradle couldn't find a local JDK 17 and fell back to its toolchain
+auto-download plugin, whose pinned version (foojay-resolver 0.5.0, from React
+Native's gradle plugin) is incompatible with Gradle 9
+([facebook/react-native#55781](https://github.com/facebook/react-native/issues/55781)).
+Fix: install JDK 17 and build with it —
+
+```sh
+sudo apt install openjdk-17-jdk          # or brew install openjdk@17
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+npx expo run:android
+```
+
+**Build targets an emulator instead of your USB phone** — run
+`adb devices` to confirm the phone is authorized, then
+`npx expo run:android --device` to pick it explicitly.
 
 ## Known limitations
 
